@@ -1,0 +1,618 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earth Explorer | By Mayank</title>
+
+<!-- Interactive World Map -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #07111f;
+  --panel: #101e30;
+  --green: #39e6a1;
+  --text: #f4f8ff;
+  --muted: #9aacc2;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 6%;
+  border-bottom: 1px solid #26364a;
+  background: #091524;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.logo span {
+  color: var(--green);
+}
+
+.creator {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.creator strong {
+  color: var(--green);
+}
+
+.hero {
+  text-align: center;
+  padding: 50px 20px 30px;
+  background:
+    radial-gradient(ellipse at top, #143954 0%, #07111f 70%);
+}
+
+.eyebrow {
+  color: var(--green);
+  letter-spacing: 3px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: clamp(34px, 6vw, 64px);
+  margin: 17px 0;
+  letter-spacing: -2px;
+}
+
+h1 span {
+  color: var(--green);
+}
+
+.hero p {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-box {
+  display: flex;
+  max-width: 680px;
+  margin: 27px auto 0;
+  padding: 7px;
+  border: 1px solid #344c60;
+  background: #101e30;
+  border-radius: 15px;
+  gap: 8px;
+}
+
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 13px;
+  font-size: 15px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 20px;
+  background: var(--green);
+  color: #04140e;
+  font-weight: bold;
+  transition: 0.25s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.status {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  min-height: 18px;
+}
+
+main {
+  max-width: 1450px;
+  margin: auto;
+  padding: 22px 5% 55px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+.stat {
+  background: var(--panel);
+  padding: 19px;
+  border: 1px solid #26364a;
+  border-radius: 15px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 25px;
+  color: var(--green);
+  margin-bottom: 7px;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.map-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 15px;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+.map-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 7px;
+}
+
+#map {
+  height: 520px;
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid #34495e;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.section-title {
+  margin: 35px 0 18px;
+}
+
+.section-title p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.places {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.place-card {
+  background: var(--panel);
+  border: 1px solid #26364a;
+  border-radius: 14px;
+  padding: 18px;
+  transition: 0.25s;
+  cursor: pointer;
+}
+
+.place-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--green);
+  background: #14283a;
+}
+
+.place-icon {
+  font-size: 28px;
+  margin-bottom: 13px;
+}
+
+.place-card h3 {
+  font-size: 16px;
+  margin-bottom: 7px;
+}
+
+.place-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.place-card small {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--green);
+}
+
+footer {
+  padding: 28px 15px;
+  text-align: center;
+  border-top: 1px solid #26364a;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+footer strong {
+  color: var(--green);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #101e30;
+  color: #fff;
+}
+
+.leaflet-popup-content {
+  line-height: 1.7;
+}
+
+@media (max-width: 850px) {
+  .places {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  header {
+    padding: 17px 5%;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .creator {
+    font-size: 12px;
+  }
+
+  .hero {
+    padding-top: 38px;
+  }
+
+  .search-box {
+    flex-wrap: wrap;
+  }
+
+  .search-box input {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .search-box button {
+    width: 100%;
+  }
+
+  .stats {
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 12px 8px;
+  }
+
+  .stat strong {
+    font-size: 20px;
+  }
+
+  .stat span {
+    font-size: 11px;
+  }
+
+  #map {
+    height: 400px;
+  }
+
+  .places {
+    gap: 10px;
+  }
+
+  .place-card {
+    padding: 13px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🌍 EARTH<span>EXPLORER</span></div>
+  <div class="creator">Created by <strong>Mayank</strong></div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">YOUR WORLD. YOUR ADVENTURE.</div>
+
+  <h1>Explore the <span>Earth.</span></h1>
+
+  <p>
+    Discover countries, cities, famous landmarks and beautiful
+    destinations around the world — all on one interactive map.
+  </p>
+
+  <div class="search-box">
+    <input id="searchInput"
+      type="text"
+      placeholder="Search any place, city or country..."
+      aria-label="Search for a place">
+
+    <button id="searchBtn" onclick="searchPlace()">
+      🔎 Explore Place
+    </button>
+  </div>
+
+  <div class="status" id="status">
+    Search for a place anywhere on Earth.
+  </div>
+</section>
+
+<main>
+  <div class="stats">
+    <div class="stat">
+      <strong>🌎 7</strong>
+      <span>Continents</span>
+    </div>
+    <div class="stat">
+      <strong>195</strong>
+      <span>Commonly counted countries</span>
+    </div>
+    <div class="stat">
+      <strong>∞</strong>
+      <span>Places to discover</span>
+    </div>
+  </div>
+
+  <div class="map-heading">
+    <div>
+      <h2>🗺️ Mayank's World Map</h2>
+      <p>Zoom in, zoom out, drag the map and click any marker.</p>
+    </div>
+    <button onclick="resetMap()">🌐 View Whole Earth</button>
+  </div>
+
+  <div id="map"></div>
+
+  <section class="section-title">
+    <h2>✨ Famous Places Around the World</h2>
+    <p>
+      Select any destination to fly to its location on the map.
+      You can also search for other places above.
+    </p>
+  </section>
+
+  <div class="places" id="placesGrid"></div>
+</main>
+
+<footer>
+  <p>🌍 <strong>Earth Explorer by Mayank</strong></p>
+  <p>Explore the world, one place at a time.</p>
+  <p>Map data © OpenStreetMap contributors</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const map = L.map("map", {
+  zoomControl: true,
+  worldCopyJump: true
+}).setView([22, 10], 2);
+
+// Free map tiles from OpenStreetMap
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+// Famous places with latitude and longitude
+const places = [
+  {name:"Taj Mahal", country:"India", icon:"🕌", lat:27.1751, lng:78.0421},
+  {name:"Eiffel Tower", country:"Paris, France", icon:"🗼", lat:48.8584, lng:2.2945},
+  {name:"Statue of Liberty", country:"New York, USA", icon:"🗽", lat:40.6892, lng:-74.0445},
+  {name:"Great Wall", country:"China", icon:"🏯", lat:40.4319, lng:116.5704},
+  {name:"Burj Khalifa", country:"Dubai, UAE", icon:"🏙️", lat:25.1972, lng:55.2744},
+  {name:"Pyramids of Giza", country:"Egypt", icon:"🔺", lat:29.9792, lng:31.1342},
+  {name:"Mount Everest", country:"Nepal / China", icon:"🏔️", lat:27.9881, lng:86.9250},
+  {name:"Sydney Opera House", country:"Australia", icon:"🎭", lat:-33.8568, lng:151.2153},
+  {name:"Colosseum", country:"Rome, Italy", icon:"🏛️", lat:41.8902, lng:12.4922},
+  {name:"Big Ben", country:"London, UK", icon:"🕰️", lat:51.5007, lng:-0.1246},
+  {name:"Christ the Redeemer", country:"Rio de Janeiro, Brazil", icon:"⛪", lat:-22.9519, lng:-43.2105},
+  {name:"Machu Picchu", country:"Peru", icon:"⛰️", lat:-13.1631, lng:-72.5450},
+  {name:"Tokyo", country:"Japan", icon:"🏙️", lat:35.6762, lng:139.6503},
+  {name:"New Delhi", country:"India", icon:"🇮🇳", lat:28.6139, lng:77.2090},
+  {name:"London", country:"United Kingdom", icon:"🇬🇧", lat:51.5072, lng:-0.1276},
+  {name:"Paris", country:"France", icon:"🇫🇷", lat:48.8566, lng:2.3522},
+  {name:"New York City", country:"United States", icon:"🇺🇸", lat:40.7128, lng:-74.0060},
+  {name:"Dubai", country:"United Arab Emirates", icon:"🇦🇪", lat:25.2048, lng:55.2708},
+  {name:"Singapore", country:"Singapore", icon:"🇸🇬", lat:1.3521, lng:103.8198},
+  {name:"Cape Town", country:"South Africa", icon:"🌍", lat:-33.9249, lng:18.4241},
+  {name:"Rome", country:"Italy", icon:"🇮🇹", lat:41.9028, lng:12.4964},
+  {name:"Bangkok", country:"Thailand", icon:"🇹🇭", lat:13.7563, lng:100.5018},
+  {name:"Toronto", country:"Canada", icon:"🇨🇦", lat:43.6532, lng:-79.3832},
+  {name:"Rio de Janeiro", country:"Brazil", icon:"🇧🇷", lat:-22.9068, lng:-43.1729},
+  {name:"Mumbai", country:"India", icon:"🌆", lat:19.0760, lng:72.8777},
+  {name:"Jaipur", country:"India", icon:"🏰", lat:26.9124, lng:75.7873},
+  {name:"Varanasi", country:"India", icon:"🪔", lat:25.3176, lng:82.9739},
+  {name:"Mecca", country:"Saudi Arabia", icon:"🕋", lat:21.3891, lng:39.8579},
+  {name:"Istanbul", country:"Türkiye", icon:"🌉", lat:41.0082, lng:28.9784},
+  {name:"Barcelona", country:"Spain", icon:"🏖️", lat:41.3874, lng:2.1686},
+  {name:"Athens", country:"Greece", icon:"🏛️", lat:37.9838, lng:23.7275},
+  {name:"Seoul", country:"South Korea", icon:"🇰🇷", lat:37.5665, lng:126.9780}
+];
+
+const markers = L.featureGroup().addTo(map);
+
+// Add marker for every listed place
+places.forEach(place => {
+  const marker = L.marker([place.lat, place.lng])
+    .bindPopup(
+      "<b>" + place.icon + " " + escapeHTML(place.name) +
+      "</b><br>" + escapeHTML(place.country) +
+      "<br><small>Earth Explorer by Mayank</small>"
+    );
+
+  marker.addTo(markers);
+  place.marker = marker;
+});
+
+// Safely display names from search results
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+// Create place cards
+const grid = document.getElementById("placesGrid");
+
+places.forEach(place => {
+  const card = document.createElement("article");
+  card.className = "place-card";
+
+  const icon = document.createElement("div");
+  icon.className = "place-icon";
+  icon.textContent = place.icon;
+
+  const title = document.createElement("h3");
+  title.textContent = place.name;
+
+  const country = document.createElement("p");
+  country.textContent = place.country;
+
+  const link = document.createElement("small");
+  link.textContent = "View on map →";
+
+  card.append(icon, title, country, link);
+
+  card.addEventListener("click", () => {
+    map.flyTo([place.lat, place.lng], 10, {
+      duration: 1.5
+    });
+
+    place.marker.openPopup();
+
+    document.getElementById("map").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  });
+
+  grid.appendChild(card);
+});
+
+// Search any place worldwide using OpenStreetMap's geocoder
+async function searchPlace() {
+  const input = document.getElementById("searchInput");
+  const status = document.getElementById("status");
+  const query = input.value.trim();
+
+  if (!query) {
+    status.textContent = "Please enter a city, country or place name.";
+    input.focus();
+    return;
+  }
+
+  status.textContent = "🌍 Searching the world...";
+
+  const button = document.getElementById("searchBtn");
+  button.disabled = true;
+
+  try {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("q", query);
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("limit", "5");
+    url.searchParams.set("addressdetails", "1");
+
+    const response = await fetch(url.toString(), {
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!response.ok) {
+      throw new Error("Search service unavailable");
+    }
+
+    const results = await response.json();
+
+    if (!results.length) {
+      status.textContent = "Place not found. Try another spelling.";
+      return;
+    }
+
+    const first = results[0];
+    const lat = Number(first.lat);
+    const lng = Number(first.lon);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      throw new Error("Invalid location");
+    }
+
+    map.flyTo([lat, lng], 12, { duration: 1.8 });
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(
+        "<b>📍 " + escapeHTML(query) +
+        "</b><br>" + escapeHTML(first.display_name) +
+        "<br><small>Found by Earth Explorer</small>"
+      )
+      .openPopup();
+
+    status.textContent = "📍 Found: " + first.display_name;
+
+  } catch (error) {
+    status.textContent =
+      "Search failed. Check your internet and try again.";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("searchInput")
+  .addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      searchPlace();
+    }
+  });
+
+// Return to world view
+function resetMap() {
+  map.flyTo([22, 10], 2, { duration: 1.5 });
+}
+
+// Ensure the map renders correctly after page layout
+setTimeout(() => map.invalidateSize(), 200);
+</script>
+
+</body>
+</html>
